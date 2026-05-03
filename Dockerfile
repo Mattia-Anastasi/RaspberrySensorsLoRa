@@ -5,6 +5,6 @@ COPY DHT11test.py .
 CMD ["python3", "DHT11test.py"]
 
 # Install the application dependencies
-RUN pip3 install adafruit-circuitpython-dht adafruit-blinka gpiozero redis RPi.GPIO
+RUN pip3 install adafruit-circuitpython-dht adafruit-blinka RPi.GPIO gpiozero redis
 
 ENV PYTHONUNBUFFERED=1

@@ -1,0 +1,27 @@
+services:
+  # DATABASE REDIS
+  redis:
+    image: redis:alpine
+    container_name: redis-db
+    ports:
+      - "6379:6379"
+
+    # INTERFACCIA GRAFICA
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis-gui
+    depends_on:
+        - redis
+    ports:
+      - "8001:8001"
+     
+  # SCRIPT PYTHON PER SENSORE
+  sensor-script:
+    image: mattiaanastasi/projectimage
+    container_name: python-sensor-app
+    depends_on:
+      - redis 
+    privileged: true
+    
+    environment:
+      - REDIS_HOST=redis
