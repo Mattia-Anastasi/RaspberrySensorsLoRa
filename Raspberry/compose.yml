@@ -1,0 +1,20 @@
+services:
+  # DATABASE REDIS
+  redis:
+    image: redis:alpine
+    container_name: redis-db
+    ports:
+      - "6379:6379"
+     
+  # SCRIPT PYTHON PER SENSORE
+  sensor-script:
+    image: mattiaanastasi/sensors-pi
+    container_name: python-sensor-app
+    depends_on:
+      - redis 
+    privileged: true
+    
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MQTT_PORT=1883
