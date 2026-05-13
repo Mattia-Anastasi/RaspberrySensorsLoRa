@@ -3,7 +3,7 @@ import board
 import adafruit_dht
 import os
 import redis
-import RPi.GPIO as GPIO
+import digitalio
 import paho.mqtt.client as mqtt
 
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
@@ -28,30 +28,28 @@ try:
 except redis.exceptions.ResponseError as error:
     print("Distance time series already exists")
 
-# Configurazione sensore.
-dht_gpio = board.D10
+# Configurazione sensori
+dht_gpio = getattr(board, f'D{os.getenv('DHT_PIN_NUMBER','10')}')
 
 dht_device = adafruit_dht.DHT11(dht_gpio)
 
-GPIO.setmode(GPIO.BCM)
-trig = 22
-echo = 23
+trig_num = int(os.getenv('HC_SR04_TRIG_NUMBER','22'))
+echo_num = int(os.getenv('HC_SR04_ECHO_NUMBER','23'))
 
-GPIO.setup(trig, GPIO.OUT)
-GPIO.setup(echo, GPIO.IN)
+trig = digitalio.DigitalInOut(getattr(board, f'D{trig_num}'))
+trig.direction = digitalio.Direction.OUTPUT
+echo = digitalio.DigitalInOut(getattr(board, f'D{echo_num}'))
+echo.direction = digitalio.Direction.INPUT
 
-GPIO.output(trig, GPIO.LOW)
+trig.value=False
+trig.echo=False
+
 print("Waiting for distance sensor to settle")
 time.sleep(2)
 
-GPIO.output(trig, GPIO.HIGH)
-time.sleep(0.00001)
-GPIO.output(trig, GPIO.LOW)
-
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.connect("192.168.1.238", int(os.getenv('MQTT_PORT', 1883)))
-
-
+client.connect(str(os.getenv('MQTT_IP','192.168.1.238')), int(os.getenv('MQTT_PORT', 1883))) #anche l'indirizzo IP deve diventare una variabile
+                                                                                            #ambientale
 print("Inizio test DHT11... Premi Ctrl+C per fermare")
 
 while True:
@@ -61,14 +59,17 @@ while True:
         temp = dht_device.temperature
         hum = dht_device.humidity
 
-        GPIO.output(trig, GPIO.HIGH)
+        trig.value = True
         time.sleep(0.00001)
-        GPIO.output(trig, GPIO.LOW)
+        trig.value = False
 
-        while GPIO.input(echo) == 0:
+        pulse_start=0
+        pulse_end=0
+
+        while not echo.value:
             pulse_start = time.time()
 
-        while GPIO.input(echo) == 1:
+        while echo.value:
             pulse_end = time.time()
 
         pulse_duration = pulse_end - pulse_start

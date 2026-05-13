@@ -1,10 +1,11 @@
-FROM python:3.11
+FROM python:3.12
 WORKDIR /local/sensing-app
+
+# Avoid output buffering
+ENV PYTHONUNBUFFERED=1
+
+# Install the application dependencies
+RUN pip3 install RPi.GPIO adafruit-circuitpython-dht adafruit-blinka redis paho-mqtt
 
 COPY Sensors.py .
 CMD ["python3", "Sensors.py"]
-
-# Install the application dependencies
-RUN pip3 install adafruit-circuitpython-dht adafruit-blinka RPi.GPIO gpiozero redis paho-mqtt
-
-ENV PYTHONUNBUFFERED=1

@@ -18,3 +18,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - MQTT_PORT=1883
+      - MQTT_IP=192.168.1.238
+      - DHT_PIN_NUMBER=10
+      - HC_SR04_TRIG_NUMBER=22
+      - HC_SR04_ECHO_NUMBER=23
